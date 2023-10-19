@@ -2,7 +2,6 @@ const express = require('express')
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
-var qs = require('querystring')
 var path = require("path");
 var template = require("./lib/template")
 var sanitizeHtml= require("sanitize-html")
@@ -29,7 +28,30 @@ app.param('id', function (req, res, next, id) {
     next()
 })
 app.get('/page/:pageId', (req, res) => {
-    res.send(res.params)
+    fs.readdir('./data', function(error, filelist){
+       var filteredId = path.parse(req.params.pageId).base
+       fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
+           var title = req.params.pageId;
+           var sanitizedTitle =  sanitizeHtml(title)
+           var sanitizedDescription = sanitizeHtml(description, {
+               allowedTags: [ 'h1' ],
+               allowedAttributes: {
+                   'a': [ 'href' ]
+               },
+               allowedIframeHostnames: ['www.youtube.com']
+           });
+           var list = template.list(filelist);
+           var html = template.html(sanitizedTitle, list, `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+               `<a href="/create">create</a>
+                       <a href="/update?id=${sanitizedTitle}">update</a>
+                       <form action="delete_process" method="post">
+                       <input type="hidden" name="id" value="${sanitizedTitle}">
+                       <input type="submit" value="delete">
+                       </form>
+                   `);
+           res.end(html);
+       });
+            });
 
 })
 app.listen(port, () => {
@@ -52,15 +74,6 @@ app.listen(port, () => {
 //     var pathname = url.parse(_url, true).pathname;
 //     if(pathname === '/'){
 //         if(queryData.id === undefined){
-//             fs.readdir('./data', function(error, filelist){
-//                 var title = 'Welcome';
-//                 var description = 'Hello, Node.js';
-//                 var list = template.list(filelist);
-//                 var html = template.html(title, list, `<h2>${title}</h2>${description}`
-//                 , `<a href="/create">create</a>`);
-//                 response.writeHead(200);
-//                 response.end(html);
-//             })
 //         } else {
 //             fs.readdir('./data', function(error, filelist){
 //                 var filteredId = path.parse(queryData.id).base
