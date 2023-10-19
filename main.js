@@ -1,7 +1,6 @@
 const express = require('express')
-var http = require('http');
 var fs = require('fs');
-var url = require('url');
+var bodyParser = require('body-parser')
 var path = require("path");
 var template = require("./lib/template")
 var sanitizeHtml= require("sanitize-html")
@@ -12,6 +11,8 @@ const port = 3000
 // app.get('/', (req, res) => {
 //     res.send('Hello World!')
 // })
+
+app.use(bodyParser.urlencoded({ extended: false }))
 
 app.get('/', function (req,res){
     fs.readdir('./data', function(error, filelist){
@@ -74,19 +75,13 @@ app.get('/create', (req, res) => {
 })
 
 app.post('/create_process', (req, res) => {
-    var body = '';
-    req.on('data', function(data){
-        body += data;
+    var post = req.body
+    var title = post.title
+    var description = post.description
+    fs.writeFile(`./data/${title}`,description,'utf8', function (err) {
+        res.writeHead(302, {Location: `/?id=${title}`});
+        res.end();
     });
-    req.on('end', function(){
-        var post = qs.parse(body)
-        var title = post.title
-        var description = post.description
-        fs.writeFile(`./data/${title}`,description,'utf8', function (err){
-            res.writeHead(302, {Location: `/?id=${title}`});
-            res.end();
-        })
-    })
 })
 
 
@@ -118,36 +113,24 @@ app.get('/update/:pageId', (req, res) => {
 })
 
 app.post('/update_process', (req, res) => {
-    var body = '';
-    req.on('data', function(data){
-        body += data;
-    });
-    req.on('end', function(){
-        var post = qs.parse(body)
-        var id = post.id
-        var title = post.title
-        var description = post.description
-        fs.rename(`./data/${id}`,`./data/${title}`,function (err){
-            fs.writeFile(`./data/${title}`,description,'utf8', function (err){
-                res.writeHead(302, {Location: `/?id=${title}`});
-                res.end();
-            })
+    var post = req.body
+    var id = post.id
+    var title = post.title
+    var description = post.description
+    fs.rename(`./data/${id}`,`./data/${title}`,function (err){
+        fs.writeFile(`./data/${title}`,description,'utf8', function (err){
+            res.writeHead(302, {Location: `/?id=${title}`});
+            res.end();
         })
     })
 })
 app.post('/delete_process', (req, res) => {
-    var body = '';
-    req.on('data', function(data){
-        body += data;
-    });
-    req.on('end', function(){
-        var post = qs.parse(body)
+        var post = req.body
         var id = post.id
         var filteredId = path.parse(id).base
         fs.unlink(`./data/${filteredId}`, function (error){
             res.writeHead(302, {Location: `/`});
             res.end();
-        })
     })
 })
 
