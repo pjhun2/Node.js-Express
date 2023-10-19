@@ -24,8 +24,13 @@ app.get('/', function (req,res){
     })
 })
 
-app.get('/page', (req, res) => {
-    res.send('/page')
+app.param('id', function (req, res, next, id) {
+    console.log('CALLED ONLY ONCE')
+    next()
+})
+app.get('/page/:pageId', (req, res) => {
+    res.send(res.params)
+
 })
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
