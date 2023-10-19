@@ -1,14 +1,28 @@
 const express = require('express')
+var http = require('http');
+var fs = require('fs');
+var url = require('url');
+var qs = require('querystring')
+var path = require("path");
+var template = require("./lib/template")
+var sanitizeHtml= require("sanitize-html")
 const app = express()
 const port = 3000
 //routing
-
-app.get('/', function (req,res){
-    return res.send('/')
-})
 // app.get('/', (req, res) => {
 //     res.send('Hello World!')
 // })
+
+app.get('/', function (req,res){
+    fs.readdir('./data', function(error, filelist){
+        var title = 'Welcome';
+        var description = 'Hello, Node.js';
+        var list = template.list(filelist);
+        var html = template.html(title, list, `<h2>${title}</h2>${description}`
+        , `<a href="/create">create</a>`);
+        res.send(html);
+    })
+})
 
 app.get('/page', (req, res) => {
     res.send('/page')
