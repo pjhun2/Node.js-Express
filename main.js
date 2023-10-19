@@ -4,6 +4,7 @@ var bodyParser = require('body-parser')
 var path = require("path");
 var template = require("./lib/template")
 var sanitizeHtml= require("sanitize-html")
+const compression = require('compression')
 const qs = require("qs");
 const app = express()
 const port = 3000
@@ -13,21 +14,28 @@ const port = 3000
 // })
 
 app.use(bodyParser.urlencoded({ extended: false }))
+app.use(compression())
 
-app.get('/', function (req,res){
-    fs.readdir('./data', function(error, filelist){
-        var title = 'Welcome';
-        var description = 'Hello, Node.js';
-        var list = template.list(filelist);
-        var html = template.html(title, list, `<h2>${title}</h2>${description}`
-        , `<a href="/create">create</a>`);
-        res.send(html);
+
+//get 방식으로 오는 요청에 대해서만 파일 리스트를 가져오는거고 , POST는 처리되지않음
+app.get('*',function (req,res,next){
+    fs.readdir('./data', function(error, filelist) {
+        req.list = filelist
+        next()
     })
 })
 
+app.get('/', function (req,res){
+        var title = 'Welcome';
+        var description = 'Hello, Node.js';
+        var list = template.list(req.list);
+        var html = template.html(title, list, `<h2>${title}</h2>${description}`
+        , `<a href="/create">create</a>`);
+        res.send(html);
+})
+
 app.get('/page/:pageId', (req, res) => {
-    fs.readdir('./data', function(error, filelist){
-       var filteredId = path.parse(req.params.pageId).base
+    var filteredId = path.parse(req.params.pageId).base
        fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
            var title = req.params.pageId;
            var sanitizedTitle =  sanitizeHtml(title)
@@ -38,7 +46,7 @@ app.get('/page/:pageId', (req, res) => {
                },
                allowedIframeHostnames: ['www.youtube.com']
            });
-           var list = template.list(filelist);
+           var list = template.list(req.list);
            var html = template.html(sanitizedTitle, list, `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
                `<a href="/create">create</a>
                        <a href="/update/${sanitizedTitle}">update</a>
@@ -49,14 +57,12 @@ app.get('/page/:pageId', (req, res) => {
                    `);
            res.send(html);
        });
-            });
 
 })
 
 app.get('/create', (req, res) => {
-    fs.readdir('./data', function(error, filelist){
         var title = 'WEB - Create';
-        var list = template.list(filelist);
+        var list = template.list(req.list);
         var html = template.html(title, list, `
             <form action="/create_process" method="post">
               <p><input type="text" name="title" placeholder="title"></p>
@@ -71,7 +77,6 @@ app.get('/create', (req, res) => {
             </form>
             `,'');
         res.send(html);
-    })
 })
 
 app.post('/create_process', (req, res) => {
@@ -86,11 +91,10 @@ app.post('/create_process', (req, res) => {
 
 
 app.get('/update/:pageId', (req, res) => {
-    fs.readdir('./data', function(error, filelist) {
         var filteredId = path.parse(req.params.pageId).base
         fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
             var title = req.params.pageId;
-            var list = template.list(filelist);
+            var list = template.list(req.list);
             var html = template.html(title, list, `
 
                 <form action="/update_process" method="post">
@@ -109,7 +113,6 @@ app.get('/update/:pageId', (req, res) => {
                 `<a href="/create">create</a> <a href="/update/${title}">update</a>`);
             res.send(html);
         });
-    });
 })
 
 app.post('/update_process', (req, res) => {
