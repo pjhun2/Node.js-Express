@@ -12,7 +12,9 @@ http.createServer(function(request,response) {
         "Set-Cookie" : [
             "yummy=choco",
             "tasty=good",
-            `Permanent=cookie; Max-Age=${60*60*24*30}`
+            `Permanent=cookie; Max-Age=${60*60*24*30}`,
+            'Secure=Secure; Secure',
+            'HttpOnly=HttpOnly; HttpOnly'
         ]
     })
     response.end('cookie')
