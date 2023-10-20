@@ -38,28 +38,32 @@ app.get('/', function (req,res){
         res.send(html);
 })
 
-app.get('/page/:pageId', (req, res) => {
+app.get('/page/:pageId', (req, res, next) => {
     var filteredId = path.parse(req.params.pageId).base
        fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
-           var title = req.params.pageId;
-           var sanitizedTitle =  sanitizeHtml(title)
-           var sanitizedDescription = sanitizeHtml(description, {
-               allowedTags: [ 'h1' ],
-               allowedAttributes: {
-                   'a': [ 'href' ]
-               },
-               allowedIframeHostnames: ['www.youtube.com']
-           });
-           var list = template.list(req.list);
-           var html = template.html(sanitizedTitle, list, `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
-               `<a href="/create">create</a>
+           if(err) {
+               next(err)
+           } else {
+               var title = req.params.pageId;
+               var sanitizedTitle =  sanitizeHtml(title)
+               var sanitizedDescription = sanitizeHtml(description, {
+                   allowedTags: [ 'h1' ],
+                   allowedAttributes: {
+                       'a': [ 'href' ]
+                   },
+                   allowedIframeHostnames: ['www.youtube.com']
+               });
+               var list = template.list(req.list);
+               var html = template.html(sanitizedTitle, list, `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+                   `<a href="/create">create</a>
                        <a href="/update/${sanitizedTitle}">update</a>
                        <form action="/delete_process" method="post">
                        <input type="hidden" name="id" value="${sanitizedTitle}">
                        <input type="submit" value="delete">
                        </form>
                    `);
-           res.send(html);
+               res.send(html);
+           }
        });
 
 })
@@ -140,6 +144,16 @@ app.post('/delete_process', (req, res) => {
             res.end();
     })
 })
+
+app.use(function (req, res, next){
+    res.status(404).send('sorry')
+})
+
+app.use((err, req, res, next) => {
+    console.error(err.stack)
+    res.status(500).send('Something broke!')
+})
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
