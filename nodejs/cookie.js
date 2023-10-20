@@ -11,7 +11,8 @@ http.createServer(function(request,response) {
     response.writeHead(200, {
         "Set-Cookie" : [
             "yummy=choco",
-            "tasty=good"
+            "tasty=good",
+            `Permanent=cookie; Max-Age=${60*60*24*30}`
         ]
     })
     response.end('cookie')
