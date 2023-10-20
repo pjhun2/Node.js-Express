@@ -5,6 +5,7 @@ var template = require("./lib/template")
 const compression = require('compression')
 const topicRouter = require('./routes/topic')
 const indexRouter = require('./routes/index')
+const helmet = require('helmet')
 const app = express()
 const port = 3000
 //routing
@@ -12,6 +13,7 @@ const port = 3000
 //     res.send('Hello World!')
 // })
 
+app.use(helmet())
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(compression())
