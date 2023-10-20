@@ -27,6 +27,21 @@ app.get('*',function (req,res,next){
     })
 })
 
+app.get('/login', function (req,res){
+    var title = 'Login';
+    var list = template.list(req.list);
+    var html = template.html(title, list, `
+        <form action="/login_process" method="post">
+        <p><input type="text" name="email" placeholder="email"></p>
+        <p><input type="password" name="password" placeholder="password"></p>
+        <p><input type="submit"></p>
+        </form>
+        `
+        ,`<a href="/topic/create">create</a>`);
+    res.send(html);
+})
+
+
 app.use('/', indexRouter)
 app.use('/topic', topicRouter)
 
