@@ -32,12 +32,13 @@ router.post('/login_process', function (req,res){
     var post = req.body
     var email = post.email
     var password = post.password
+    const username = email.split('@')[0]
     if ( email === "ian@bemyfriends.com" && password === "pw.1234") {
         res.writeHead(302, {
             'Set-Cookie' : [
                 `email=${email}`,
                 `password=${password}`,
-                `nickname=ian`
+                `nickname=${username}`
             ],
             location: '/'
         })
