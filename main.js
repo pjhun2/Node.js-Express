@@ -13,6 +13,7 @@ const port = 3000
 //     res.send('Hello World!')
 // })
 
+app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(compression())
 
@@ -29,7 +30,10 @@ app.get('/', function (req,res){
         var title = 'Welcome';
         var description = 'Hello, Node.js';
         var list = template.list(req.list);
-        var html = template.html(title, list, `<h2>${title}</h2>${description}`
+        var html = template.html(title, list, `
+        <h2>${title}</h2>${description}
+        <img src="/images/hello.jpg" style="width:400px; display:block; margin-top:10px;"></img>
+        `
         , `<a href="/create">create</a>`);
         res.send(html);
 })
