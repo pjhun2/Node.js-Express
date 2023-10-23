@@ -3,7 +3,26 @@ const express = require('express')
 const fs = require("fs");
 const cookie = require("cookie");
 const router = express.Router()
-import {authIsOwner, authStatusUI} from "./topic";
+
+function authIsOwner(req,res) {
+    var isOwner = false;
+    var cookies = {}
+    if(req.headers.cookie){
+        cookies = cookie.parse(req.headers.cookie)
+    }
+    if ( cookies.email === "ian@bemyfriends.com" && cookies.password === "pw.1234") {
+        isOwner = true;
+    }
+    return isOwner
+}
+
+function authStatusUI(req,res) {
+    var authStatusUI = '<a href="/login">login</a>'
+    if(authIsOwner(req,res)) {
+        authStatusUI = '<a href="/logout_process">logout</a>'
+    }
+    return authStatusUI
+}
 
 router.get('/', function (req,res){
     var title = 'Welcome';
