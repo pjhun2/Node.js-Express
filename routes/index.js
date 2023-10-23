@@ -71,6 +71,19 @@ router.post('/login_process', function (req,res){
     res.end();
 })
 
+router.get('/logout_process', function (req,res){
+    var post = req.body
+        res.writeHead(302, {
+            'Set-Cookie' : [
+                `email=; Max-Age=0`,
+                `password=; Max-Age=0`,
+                `nickname=; Max-Age=0`
+            ],
+            location: '/'
+        })
+        res.end();
+})
+
 module.exports = router
 exports = {
     authStatusUI

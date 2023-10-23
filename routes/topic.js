@@ -74,7 +74,7 @@ router.get('/update/:pageId', (req, res) => {
                     </p>
                 </form>
                 `,
-            `<a href="/create">create</a> <a href="/topic/update/${title}">update</a>`,authStatusUI(req,res));
+            `<a href="/topic/create">create</a> <a href="/topic/update/${title}">update</a>`,authStatusUI(req,res));
         res.send(html);
     });
 })
