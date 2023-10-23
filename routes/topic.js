@@ -3,7 +3,28 @@ const fs = require("fs");
 const path = require("path");
 const sanitizeHtml = require("sanitize-html");
 const express = require('express')
+const cookie = require("cookie");
 const router = express.Router()
+
+function authIsOwner(req,res) {
+    var isOwner = false;
+    var cookies = {}
+    if(req.headers.cookie){
+        cookies = cookie.parse(req.headers.cookie)
+    }
+    if ( cookies.email === "ian@bemyfriends.com" && cookies.password === "pw.1234") {
+        isOwner = true;
+    }
+    return isOwner
+}
+
+function authStatusUI(req,res) {
+    var authStatusUI = '<a href="/login">login</a>'
+    if(authIsOwner(req,res)) {
+        authStatusUI = '<a href="/logout_process">logout</a>'
+    }
+    return authStatusUI
+}
 router.get('/create', (req, res) => {
     var title = 'WEB - Create';
     var list = template.list(req.list);
@@ -19,7 +40,7 @@ router.get('/create', (req, res) => {
                     <input type="submit">
                 </p>
             </form>
-            `,'');
+            `,'',authStatusUI(req, res));
     res.send(html);
 })
 
@@ -53,7 +74,7 @@ router.get('/update/:pageId', (req, res) => {
                     </p>
                 </form>
                 `,
-            `<a href="/create">create</a> <a href="/topic/update/${title}">update</a>`);
+            `<a href="/create">create</a> <a href="/topic/update/${title}">update</a>`,authStatusUI(req,res));
         res.send(html);
     });
 })
@@ -103,7 +124,7 @@ router.get('/:pageId', (req, res, next) => {
                        <input type="hidden" name="id" value="${sanitizedTitle}">
                        <input type="submit" value="delete">
                        </form>
-                   `);
+                   `,authStatusUI(req,res));
             res.send(html);
         }
     });
