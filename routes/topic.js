@@ -4,6 +4,7 @@ const path = require("path");
 const sanitizeHtml = require("sanitize-html");
 const express = require('express')
 const cookie = require("cookie");
+const {response} = require("express");
 const router = express.Router()
 
 function authIsOwner(req,res) {
@@ -26,6 +27,10 @@ function authStatusUI(req,res) {
     return authStatusUI
 }
 router.get('/create', (req, res) => {
+    if(authIsOwner(req,res) === false) {
+        res.end("Login Required!!")
+        return false
+    }
     var title = 'WEB - Create';
     var list = template.list(req.list);
     var html = template.html(title, list, `
@@ -45,6 +50,10 @@ router.get('/create', (req, res) => {
 })
 
 router.post('/create_process', (req, res) => {
+    if(authIsOwner(req,res) === false) {
+        res.end("Login Required!!")
+        return false
+    }
     var post = req.body
     var title = post.title
     var description = post.description
@@ -55,6 +64,10 @@ router.post('/create_process', (req, res) => {
 })
 
 router.get('/update/:pageId', (req, res) => {
+    if(authIsOwner(req,res) === false) {
+        res.end("Login Required!!")
+        return false
+    }
     var filteredId = path.parse(req.params.pageId).base
     fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
         var title = req.params.pageId;
@@ -80,6 +93,10 @@ router.get('/update/:pageId', (req, res) => {
 })
 
 router.post('/update_process', (req, res) => {
+    if(authIsOwner(req,res) === false) {
+        res.end("Login Required!!")
+        return false
+    }
     var post = req.body
     var id = post.id
     var title = post.title
@@ -93,6 +110,10 @@ router.post('/update_process', (req, res) => {
 })
 
 router.post('/delete_process', (req, res) => {
+    if(authIsOwner(req,res) === false) {
+        res.end("Login Required!!")
+        return false
+    }
     var post = req.body
     var id = post.id
     var filteredId = path.parse(id).base
