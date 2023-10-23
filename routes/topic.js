@@ -153,3 +153,7 @@ router.get('/:pageId', (req, res, next) => {
 })
 
 module.exports = router;
+export {
+    authStatusUI,
+    authIsOwner
+}
