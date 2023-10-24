@@ -28,8 +28,8 @@ const router = express.Router()
 //     return authStatusUI
 // }
 router.get('/create', (req, res) => {
-    if(auth.isOwner(req,res) === false) {
-        res.end("Login Required!!")
+    if(!auth.isOwner(req,res)) {
+        res.redirect('/')
         return false
     }
     var title = 'WEB - Create';
@@ -51,8 +51,8 @@ router.get('/create', (req, res) => {
 })
 
 router.post('/create_process', (req, res) => {
-    if(auth.isOwner(req,res) === false) {
-        res.end("Login Required!!")
+    if(!auth.isOwner(req,res)) {
+        res.redirect('/')
         return false
     }
     var post = req.body
@@ -65,8 +65,8 @@ router.post('/create_process', (req, res) => {
 })
 
 router.get('/update/:pageId', (req, res) => {
-    if(auth.isOwner(req,res) === false) {
-        res.end("Login Required!!")
+    if(!auth.isOwner(req,res)) {
+        res.redirect('/')
         return false
     }
     var filteredId = path.parse(req.params.pageId).base
@@ -94,8 +94,8 @@ router.get('/update/:pageId', (req, res) => {
 })
 
 router.post('/update_process', (req, res) => {
-    if(auth.isOwner(req,res) === false) {
-        res.end("Login Required!!")
+    if(!auth.isOwner(req,res)) {
+        res.redirect('/')
         return false
     }
     var post = req.body
@@ -111,8 +111,8 @@ router.post('/update_process', (req, res) => {
 })
 
 router.post('/delete_process', (req, res) => {
-    if(auth.isOwner(req,res) === false) {
-        res.end("Login Required!!")
+    if(!auth.isOwner(req,res)) {
+        res.redirect('/')
         return false
     }
     var post = req.body
