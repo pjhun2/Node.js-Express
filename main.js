@@ -23,6 +23,8 @@ var FileStore = require('session-file-store')(session);
 var fileStoreOptions = {};
 
 app.use(session({
+    httpOnly: true, // session에 cookie를 넣어 공격하는 기법을 방지하기 위함
+    tls: true, // https로 동작하게끔 설정
     key: 'is_logined',
     secret: 'mysecret',
     resave: false,
@@ -31,6 +33,8 @@ app.use(session({
 }));
 
 app.use(session({
+    httpOnly: true, // session에 cookie를 넣어 공격하는 기법을 방지하기 위함
+    tls: true, // https로 동작하게끔 설정
     key: 'nickname',
     secret: 'mysecret',
     resave: false,
