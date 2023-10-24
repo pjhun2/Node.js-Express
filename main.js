@@ -3,11 +3,10 @@ var fs = require('fs');
 var bodyParser = require('body-parser')
 var template = require("./lib/template")
 const compression = require('compression')
-const topicRouter = require('./routes/topic')
-const indexRouter = require('./routes/index')
 const helmet = require('helmet')
 const app = express()
 const port = 3000
+var session = require('express-session')
 //routing
 // app.get('/', (req, res) => {
 //     res.send('Hello World!')
@@ -19,6 +18,27 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(compression())
 
 
+var FileStore = require('session-file-store')(session);
+
+var fileStoreOptions = {};
+
+app.use(session({
+    key: 'is_logined',
+    secret: 'mysecret',
+    resave: false,
+    saveUninitialized: false,
+    store: new FileStore(fileStoreOptions),
+}));
+
+app.use(session({
+    key: 'nickname',
+    secret: 'mysecret',
+    resave: false,
+    saveUninitialized: false,
+    store: new FileStore(fileStoreOptions),
+}));
+
+
 //get 방식으로 오는 요청에 대해서만 파일 리스트를 가져오는거고 , POST는 처리되지않음
 app.get('*',function (req,res,next){
     fs.readdir('./data', function(error, filelist) {
@@ -28,10 +48,13 @@ app.get('*',function (req,res,next){
 })
 
 
-
+const topicRouter = require('./routes/topic')
+const indexRouter = require('./routes/index')
+const authRouter = require('./routes/auth')
 
 app.use('/', indexRouter)
 app.use('/topic', topicRouter)
+app.use('/auth', authRouter)
 
 app.use(function (req, res, next){
     res.status(404).send('sorry')

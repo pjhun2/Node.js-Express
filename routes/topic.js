@@ -5,29 +5,30 @@ const sanitizeHtml = require("sanitize-html");
 const express = require('express')
 const cookie = require("cookie");
 const {response} = require("express");
+var auth = require('../lib/auth')
 const router = express.Router()
 
-function authIsOwner(req,res) {
-    var isOwner = false;
-    var cookies = {}
-    if(req.headers.cookie){
-        cookies = cookie.parse(req.headers.cookie)
-    }
-    if ( cookies.email === "ian@bemyfriends.com" && cookies.password === "pw.1234") {
-        isOwner = true;
-    }
-    return isOwner
-}
-
-function authStatusUI(req,res) {
-    var authStatusUI = '<a href="/login">login</a>'
-    if(authIsOwner(req,res)) {
-        authStatusUI = '<a href="/logout_process">logout</a>'
-    }
-    return authStatusUI
-}
+// function authIsOwner(req,res) {
+//     var isOwner = false;
+//     var cookies = {}
+//     if(req.headers.cookie){
+//         cookies = cookie.parse(req.headers.cookie)
+//     }
+//     if ( cookies.email === "ian@bemyfriends.com" && cookies.password === "pw.1234") {
+//         isOwner = true;
+//     }
+//     return isOwner
+// }
+//
+// function authStatusUI(req,res) {
+//     var authStatusUI = '<a href="/login">login</a>'
+//     if(authIsOwner(req,res)) {
+//         authStatusUI = '<a href="/logout_process">logout</a>'
+//     }
+//     return authStatusUI
+// }
 router.get('/create', (req, res) => {
-    if(authIsOwner(req,res) === false) {
+    if(auth.isOwner(req,res) === false) {
         res.end("Login Required!!")
         return false
     }
@@ -45,12 +46,12 @@ router.get('/create', (req, res) => {
                     <input type="submit">
                 </p>
             </form>
-            `,'',authStatusUI(req, res));
+            `,'',auth.statusUI(req, res));
     res.send(html);
 })
 
 router.post('/create_process', (req, res) => {
-    if(authIsOwner(req,res) === false) {
+    if(auth.isOwner(req,res) === false) {
         res.end("Login Required!!")
         return false
     }
@@ -64,7 +65,7 @@ router.post('/create_process', (req, res) => {
 })
 
 router.get('/update/:pageId', (req, res) => {
-    if(authIsOwner(req,res) === false) {
+    if(auth.isOwner(req,res) === false) {
         res.end("Login Required!!")
         return false
     }
@@ -87,13 +88,13 @@ router.get('/update/:pageId', (req, res) => {
                     </p>
                 </form>
                 `,
-            `<a href="/topic/create">create</a> <a href="/topic/update/${title}">update</a>`,authStatusUI(req,res));
+            `<a href="/topic/create">create</a> <a href="/topic/update/${title}">update</a>`,auth.statusUI(req,res));
         res.send(html);
     });
 })
 
 router.post('/update_process', (req, res) => {
-    if(authIsOwner(req,res) === false) {
+    if(auth.isOwner(req,res) === false) {
         res.end("Login Required!!")
         return false
     }
@@ -110,7 +111,7 @@ router.post('/update_process', (req, res) => {
 })
 
 router.post('/delete_process', (req, res) => {
-    if(authIsOwner(req,res) === false) {
+    if(auth.isOwner(req,res) === false) {
         res.end("Login Required!!")
         return false
     }
@@ -145,7 +146,7 @@ router.get('/:pageId', (req, res, next) => {
                        <input type="hidden" name="id" value="${sanitizedTitle}">
                        <input type="submit" value="delete">
                        </form>
-                   `,authStatusUI(req,res));
+                   `,auth.statusUI(req,res));
             res.send(html);
         }
     });
