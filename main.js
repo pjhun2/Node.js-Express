@@ -9,6 +9,7 @@ const port = 3000
 const path = require("path");
 var session = require('express-session')
 var flash = require('connect-flash');
+var db = require('./lib/db')
 
 app.use(helmet())
 app.use(express.static('public'))
@@ -29,14 +30,9 @@ var passport = require('./lib/passport')(app)
 
 //get 방식으로 오는 요청에 대해서만 파일 리스트를 가져오는거고 , POST는 처리되지않음
 app.get('*',function (req,res,next){
-    fs.readdir('./data', function(error, filelist) {
-        if(error) {
-            req.list = {}
-        } else {
-            req.list = filelist
-            next()
-        }
-    })
+
+    req.list = db.get('topics').value()
+    next()
 })
 
 
