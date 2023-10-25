@@ -5,10 +5,7 @@ var fs = require('fs');
 var sanitizeHtml = require('sanitize-html');
 var template = require('../lib/template.js');
 const auth = require("../lib/auth");
-const low = require('lowdb')
-const FileSync = require('lowdb/adapters/FileSync')
-const adapter = new FileSync('db.json')
-const db = low(adapter)
+var db = require('../lib/db')
 const shortid = require('shortid');
 
 // router.post('/login_process', function (request, response) {
@@ -119,7 +116,14 @@ module.exports = function (passport) {
         var password2 = post.password2
         var displayName = post.displayName
 
-        const result = db.get('users').find({ username: post.username }).value();
+        var result = '';
+        var dataCheck = db.get('users').find({ username: post.username }).value();
+
+        if(dataCheck) {
+            result = dataCheck
+        } else {
+            result = '';
+        }
 
         if(result.username === username) {
             if(password !== password2) {
@@ -129,17 +133,18 @@ module.exports = function (passport) {
             req.flash('error', 'Email must same!')
             res.redirect('/auth/register')
         } else {
-            db.get('users').push({
+            var user = {
                 id: shortid.generate(),
                 username:username,
                 password:password,
                 displayName:displayName
-            }).write();
-            res.redirect('/')
+            }
+            db.get('users').push(user).write();
+            req.login(user, function(err) {
+                if (err) { return (err); }
+                return res.redirect('/');
+            });
         }
-
-        res.end()
-
     })
 
     return router
