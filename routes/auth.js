@@ -6,10 +6,16 @@ var sanitizeHtml = require('sanitize-html');
 var template = require('../lib/template.js');
 
 router.get('/login', function (request, response) {
+    var fmsg = request.flash();
+    var feedback = '';
+    if(fmsg.error) {
+        feedback = fmsg.error[0];
+    }
     var title = 'WEB - login';
     var list = template.list(request.list);
     var html = template.html(title, list, `
     <h1>Sign in</h1>
+    <div style="color:red">${feedback}</div>
        <form action="/auth/login_process" method="post">
            <section>
                <label for="username">Username</label>
