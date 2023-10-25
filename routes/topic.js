@@ -7,6 +7,8 @@ const cookie = require("cookie");
 const {response} = require("express");
 var auth = require('../lib/auth')
 const router = express.Router()
+var db = require('../lib/db')
+var shortid = require('shortid')
 
 // function authIsOwner(req,res) {
 //     var isOwner = false;
@@ -58,10 +60,18 @@ router.post('/create_process', (req, res) => {
     var post = req.body
     var title = post.title
     var description = post.description
-    fs.writeFile(`./data/${title}`,description,'utf8', function (err) {
-        res.writeHead(302, {Location: `/topic/${title}`});
-        res.end();
-    });
+    var id = shortid.generate()
+    db.get('topics').push({
+        id:id,
+        title:title,
+        description:description,
+        user_id:req.user.id
+    }).write();
+    res.redirect(`/topic/${id}`)
+    // fs.writeFile(`./data/${title}`,description,'utf8', function (err) {
+    //     res.writeHead(302, {Location: `/topic/${title}`});
+    //     res.end();
+    // });
 })
 
 router.get('/update/:pageId', (req, res) => {
@@ -124,32 +134,33 @@ router.post('/delete_process', (req, res) => {
     })
 })
 router.get('/:pageId', (req, res, next) => {
-    var filteredId = path.parse(req.params.pageId).base
-    fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
-        if(err) {
-            next(err)
-        } else {
-            var title = req.params.pageId;
-            var sanitizedTitle =  sanitizeHtml(title)
-            var sanitizedDescription = sanitizeHtml(description, {
-                allowedTags: [ 'h1' ],
-                allowedAttributes: {
-                    'a': [ 'href' ]
-                },
-                allowedIframeHostnames: ['www.youtube.com']
-            });
-            var list = template.list(req.list);
-            var html = template.html(sanitizedTitle, list, `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
-                `<a href="/topic/create">create</a>
-                       <a href="/topic/update/${sanitizedTitle}">update</a>
-                       <form action="/topic/delete_process" method="post">
-                       <input type="hidden" name="id" value="${sanitizedTitle}">
-                       <input type="submit" value="delete">
-                       </form>
-                   `,auth.statusUI(req,res));
-            res.send(html);
-        }
+
+    var topic = db.get('topics').find({id:req.params.pageId}).value()
+    var title = topic.title;
+    var description = topic.description
+    var user = db.get('users').find({id:topic.user_id}).value()
+    var sanitizedTitle =  sanitizeHtml(title)
+    var sanitizedDescription = sanitizeHtml(description, {
+        allowedTags: [ 'h1' ],
+        allowedAttributes: {
+            'a': [ 'href' ]
+        },
+        allowedIframeHostnames: ['www.youtube.com']
     });
+    var list = template.list(req.list);
+    var html = template.html(sanitizedTitle, list, `
+
+        <h2>${sanitizedTitle}</h2>${sanitizedDescription}
+        <p>by ${user.displayName}</p>
+        `,
+        `<a href="/topic/create">create</a>
+               <a href="/topic/update/${sanitizedTitle}">update</a>
+               <form action="/topic/delete_process" method="post">
+               <input type="hidden" name="id" value="${sanitizedTitle}">
+               <input type="submit" value="delete">
+               </form>
+           `,auth.statusUI(req,res));
+    res.send(html);
 
 })
 
