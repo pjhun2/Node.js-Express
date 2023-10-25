@@ -17,6 +17,12 @@
       "username": "an@bemyfriends.com",
       "password": "pw.1234",
       "displayName": "san"
+    },
+    {
+      "id": "V0mgoy1tN",
+      "username": "bbbbn@bemyfriends.com",
+      "password": "$2b$10$WgLMAvn8YxUz3Wn4/0mdpe03S41UdTFBe8oUThhRU9QkZAnlfqnxe",
+      "displayName": "ian"
     }
   ],
   "topics": [

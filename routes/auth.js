@@ -7,6 +7,7 @@ var template = require('../lib/template.js');
 const auth = require("../lib/auth");
 var db = require('../lib/db')
 const shortid = require('shortid');
+const bcrypt = require('bcrypt');
 
 // router.post('/login_process', function (request, response) {
 //     var post = request.body;
@@ -133,17 +134,20 @@ module.exports = function (passport) {
             req.flash('error', 'Email must same!')
             res.redirect('/auth/register')
         } else {
-            var user = {
-                id: shortid.generate(),
-                username:username,
-                password:password,
-                displayName:displayName
-            }
-            db.get('users').push(user).write();
-            req.login(user, function(err) {
-                if (err) { return (err); }
-                return res.redirect('/');
-            });
+            bcrypt.hash(password, 10, function (err, hash) {
+                var user = {
+                    id: shortid.generate(),
+                    username:username,
+                    password:hash,
+                    displayName:displayName
+                }
+                db.get('users').push(user).write();
+                req.login(user, function(err) {
+                    if (err) { return (err); }
+                    return res.redirect('/');
+                });
+            })
+
         }
     })
 
