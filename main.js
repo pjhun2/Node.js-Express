@@ -6,7 +6,9 @@ const compression = require('compression')
 const helmet = require('helmet')
 const app = express()
 const port = 3000
+const path = require("path");
 var session = require('express-session')
+
 //routing
 // app.get('/', (req, res) => {
 //     res.send('Hello World!')
@@ -20,27 +22,63 @@ app.use(compression())
 
 var FileStore = require('session-file-store')(session);
 
-var fileStoreOptions = {};
-
 app.use(session({
-    httpOnly: true, // session에 cookie를 넣어 공격하는 기법을 방지하기 위함
-    tls: true, // https로 동작하게끔 설정
-    key: 'is_logined',
-    secret: 'mysecret',
+    secret: 'keyboard cat',
     resave: false,
     saveUninitialized: false,
-    store: new FileStore(fileStoreOptions),
+    store: new FileStore(),
 }));
 
-app.use(session({
-    httpOnly: true, // session에 cookie를 넣어 공격하는 기법을 방지하기 위함
-    tls: true, // https로 동작하게끔 설정
-    key: 'nickname',
-    secret: 'mysecret',
-    resave: false,
-    saveUninitialized: false,
-    store: new FileStore(fileStoreOptions),
+//
+// app.use(session({
+//     httpOnly: true, // session에 cookie를 넣어 공격하는 기법을 방지하기 위함
+//     secret: 'mysecret',
+//     resave: false,
+//     saveUninitialized: false,
+//     store: new FileStore(),
+// }));
+
+
+
+var passport = require('passport');
+var LocalStrategy = require('passport-local');
+
+passport.serializeUser(function(user, done) {
+    done(null, user.username);
+});
+
+passport.deserializeUser(function(user, done) {
+    console.log('deserialize');
+    done(null, user);
+});
+
+var authData = {
+    username: 'ian@bemyfriends.com',
+    password: 'pw.1234',
+    nickname: 'ian'
+}
+
+app.post('/auth/login_process', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/auth/login'
 }));
+
+passport.use(new LocalStrategy(function verify(username, password, done) {
+    if(username === authData.username){
+        if(password === authData.password) {
+            return done(null, authData)
+        } else {
+            return done(null, false, {
+                message: 'Incorrect password.'
+            })
+        }
+    } else {
+        return done(null, false, {
+            message: 'Incorrect username.'
+        })
+    }
+}));
+
 
 
 //get 방식으로 오는 요청에 대해서만 파일 리스트를 가져오는거고 , POST는 처리되지않음
