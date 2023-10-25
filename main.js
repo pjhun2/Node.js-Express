@@ -19,24 +19,15 @@ app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(compression())
 
-
 var FileStore = require('session-file-store')(session);
 
 app.use(session({
     secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
+    cookie : { secure : false, maxAge : (4 * 60 * 60 * 1000) },
     store: new FileStore(),
 }));
-
-//
-// app.use(session({
-//     httpOnly: true, // session에 cookie를 넣어 공격하는 기법을 방지하기 위함
-//     secret: 'mysecret',
-//     resave: false,
-//     saveUninitialized: false,
-//     store: new FileStore(),
-// }));
 
 
 
@@ -47,9 +38,8 @@ passport.serializeUser(function(user, done) {
     done(null, user.username);
 });
 
-passport.deserializeUser(function(user, done) {
-    console.log('deserialize');
-    done(null, user);
+passport.deserializeUser(function(id, done) {
+    done(null, authData);
 });
 
 var authData = {
@@ -58,10 +48,8 @@ var authData = {
     nickname: 'ian'
 }
 
-app.post('/auth/login_process', passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/auth/login'
-}));
+app.use(passport.initialize());
+app.use(passport.session())
 
 passport.use(new LocalStrategy(function verify(username, password, done) {
     if(username === authData.username){
@@ -80,6 +68,10 @@ passport.use(new LocalStrategy(function verify(username, password, done) {
 }));
 
 
+app.post('/auth/login_process', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/auth/login'
+}));
 
 //get 방식으로 오는 요청에 대해서만 파일 리스트를 가져오는거고 , POST는 처리되지않음
 app.get('*',function (req,res,next){
