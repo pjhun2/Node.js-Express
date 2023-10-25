@@ -42,10 +42,17 @@ router.get('/login', function (request, response) {
 //     }
 // });
 
-router.get('/logout', function (request, response) {
-    request.session.destroy(function(err){
-        response.redirect('/');
+router.get('/logout', function(req, res, next) {
+    req.logout(function(err) {
+        if (err) { return next(err); }
+        res.redirect('/');
     });
 });
+
+// router.get('/logout', function (request, response) {
+//     request.session.destroy(function(err){
+//         response.redirect('/');
+//     });
+// });
 
 module.exports = router;
