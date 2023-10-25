@@ -5,34 +5,6 @@ var fs = require('fs');
 var sanitizeHtml = require('sanitize-html');
 var template = require('../lib/template.js');
 
-router.get('/login', function (request, response) {
-    var fmsg = request.flash();
-    var feedback = '';
-    if(fmsg.error) {
-        feedback = fmsg.error[0];
-    }
-    var title = 'WEB - login';
-    var list = template.list(request.list);
-    var html = template.html(title, list, `
-    <h1>Sign in</h1>
-    <div style="color:red">${feedback}</div>
-       <form action="/auth/login_process" method="post">
-           <section>
-               <label for="username">Username</label>
-               <input id="username" name="username" type="text" autocomplete="username" required autofocus>
-           </section>
-           <section>
-               <label for="current-password">Password</label>
-               <input id="current-password" name="password" type="password" autocomplete="current-password" required>
-           </section>
-           <button type="submit">Sign in</button>
-    </form>
-  `, '');
-    response.send(html);
-});
-
-
-
 // router.post('/login_process', function (request, response) {
 //     var post = request.body;
 //     var email = post.email;
@@ -48,12 +20,49 @@ router.get('/login', function (request, response) {
 //     }
 // });
 
-router.get('/logout', function(req, res, next) {
-    req.logout(function(err) {
-        if (err) { return next(err); }
-        res.redirect('/');
+module.exports = function (passport) {
+    router.get('/login', function (request, response) {
+        var fmsg = request.flash();
+        var feedback = '';
+        if(fmsg.error) {
+            feedback = fmsg.error[0];
+        }
+        var title = 'WEB - login';
+        var list = template.list(request.list);
+        var html = template.html(title, list, `
+    <h1>Sign in</h1>
+    <div style="color:red">${feedback}</div>
+       <form action="/auth/login_process" method="post">
+           <section>
+               <label for="username">Username</label>
+               <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+           </section>
+           <section>
+               <label for="current-password">Password</label>
+               <input id="current-password" name="password" type="password" autocomplete="current-password" required>
+           </section>
+           <button type="submit">Sign in</button>
+    </form>
+  `, '');
+        response.send(html);
     });
-});
+
+    router.post('/login_process', passport.authenticate('local', {
+        successRedirect: '/',
+        failureRedirect: '/auth/login',
+        successFlash: true,
+        failureFlash: true
+    }));
+
+    router.get('/logout', function(req, res, next) {
+        req.logout(function(err) {
+            if (err) { return next(err); }
+            res.redirect('/');
+        });
+    });
+    return router
+}
+
 
 // router.get('/logout', function (request, response) {
 //     request.session.destroy(function(err){
@@ -61,4 +70,3 @@ router.get('/logout', function(req, res, next) {
 //     });
 // });
 
-module.exports = router;

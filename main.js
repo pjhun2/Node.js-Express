@@ -6,9 +6,7 @@ const compression = require('compression')
 const helmet = require('helmet')
 const app = express()
 const port = 3000
-const path = require("path");
 var session = require('express-session')
-var flash = require('connect-flash');
 
 //routing
 // app.get('/', (req, res) => {
@@ -20,6 +18,7 @@ app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(compression())
 
+
 var FileStore = require('session-file-store')(session);
 
 app.use(session({
@@ -30,64 +29,16 @@ app.use(session({
     store: new FileStore(),
 }));
 
-// app.get('/flash', function(req, res){
-//     // Set a flash message by passing the key, followed by the value, to req.flash().
-//     req.flash('msg', 'Flash is back!!')
-//     res.send('flash');
-// });
-//
-// app.get('/flash-display', function(req, res){
-//     // Get an array of flash messages by passing the key to req.flash()
-//     var fmsg = req.flash()
-//     console.log(fmsg)
-//     res.send(fmsg);
-// });
+var passport = require('./lib/passport')(app)
+
+const topicRouter = require('./routes/topic')
+const indexRouter = require('./routes/index')
+const authRouter = require('./routes/auth')(passport)
 
 
-var passport = require('passport');
-var LocalStrategy = require('passport-local');
-app.use(passport.initialize());
-app.use(passport.session())
-app.use(flash());
-passport.serializeUser(function(user, done) {
-    done(null, user.username);
-});
-
-passport.deserializeUser(function(id, done) {
-    done(null, authData);
-});
-
-var authData = {
-    username: 'ian@bemyfriends.com',
-    password: 'pw.1234',
-    nickname: 'ian'
-}
-
-
-
-passport.use(new LocalStrategy(function verify(username, password, done) {
-    if(username === authData.username){
-        if(password === authData.password) {
-            return done(null, authData)
-        } else {
-            return done(null, false, {
-                message: 'Incorrect password.'
-            })
-        }
-    } else {
-        return done(null, false, {
-            message: 'Incorrect username.'
-        })
-    }
-}));
-
-
-app.post('/auth/login_process', passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/auth/login',
-    successFlash: true,
-    failureFlash: true
-}));
+app.use('/', indexRouter)
+app.use('/topic', topicRouter)
+app.use('/auth', authRouter)
 
 //get 방식으로 오는 요청에 대해서만 파일 리스트를 가져오는거고 , POST는 처리되지않음
 app.get('*',function (req,res,next){
@@ -96,15 +47,6 @@ app.get('*',function (req,res,next){
         next()
     })
 })
-
-
-const topicRouter = require('./routes/topic')
-const indexRouter = require('./routes/index')
-const authRouter = require('./routes/auth')
-
-app.use('/', indexRouter)
-app.use('/topic', topicRouter)
-app.use('/auth', authRouter)
 
 app.use(function (req, res, next){
     res.status(404).send('sorry')
