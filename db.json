@@ -1,0 +1,34 @@
+{
+  "users": [
+    {
+      "id": "Pkjf5oldH",
+      "username": "ian@bemyfriends.com",
+      "password": "pw.1234",
+      "displayName": "ian"
+    },
+    {
+      "id": "8tODv21cS",
+      "username": "ian@bemyfriends.com",
+      "password": "pw.12342",
+      "displayName": "ian"
+    },
+    {
+      "id": "EADheqfj6",
+      "username": "ian@bemyfriends.com",
+      "password": "pw.1234",
+      "displayName": "ian"
+    },
+    {
+      "id": "SC5YZyCpX",
+      "username": "ian@bemyfriends.com",
+      "password": "pw.1234",
+      "displayName": "ian"
+    },
+    {
+      "id": "tTxgBrH-Y",
+      "username": "ian@bemyfriends.com",
+      "password": "pw.1234",
+      "displayName": "ian"
+    }
+  ]
+}
